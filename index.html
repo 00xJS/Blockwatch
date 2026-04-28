@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockwatch — Bitcoin On-Chain Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary:      #1b1f4b;
+            --primary-dark: #0f1235;
+            --accent:       #f7931a;
+            --accent-2:     #c23e8c;
+            --green:        #1a9e4a;
+            --red:          #d32f2f;
+            --amber:        #d4a017;
+            --border:       #d4d0e0;
+            --bg:           #f4f5f7;
+            --card:         #ffffff;
+            --text:         #222;
+            --muted:        #666;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: auto;
+            padding: 28px 32px;
+            background: var(--card);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.09);
+            border-radius: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin: 0 0 6px;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+        }
+
+        h1 .btc { color: var(--accent); }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+        .top-bar .spacer { flex: 1; }
+
+        .help-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #eef0f5;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .help-link:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        h2 {
+            color: var(--text);
+            font-size: 1.05rem;
+            margin: 26px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--muted);
+            margin: 0 0 14px;
+            font-size: 14px;
+        }
+
+        .data-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            margin: 12px 0 22px;
+            font-size: 13.5px;
+            min-height: 40px;
+            background: #eef0f5;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        .data-status.ok    { background: #e7f6ec; border-color: #c8e7d2; color: #1a6b35; }
+        .data-status.error { background: #fdecec; border-color: #f5c6c6; color: #a82424; }
+        .data-status .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+        .data-status.ok .dot    { background: var(--green); animation: pulse 2s infinite; }
+        .data-status.error .dot { background: var(--red); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .card {
+            background: #fafbfd;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .card .lbl {
+            font-size: 11.5px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .card .val {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+        }
+        .card .val.up   { color: var(--green); }
+        .card .val.down { color: var(--red); }
+        .card .val.amber { color: var(--amber); }
+
+        .card .sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .span-2 { grid-column: span 2; }
+        .span-4 { grid-column: span 4; }
+
+        .gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-svg { width: 160px; height: 88px; }
+
+        .gauge-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .gauge-classification {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            margin-top: 4px;
+        }
+        canvas { width: 100% !important; height: 280px !important; }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            padding: 12px 0 0;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .footer a:hover { color: var(--accent-2); }
+
+        .refresh-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            align-items: center;
+            margin: 14px 0 4px;
+        }
+
+        button.refresh {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button.refresh:hover     { background: var(--accent-2); }
+        button.refresh:disabled  { background: #b8b3c2; cursor: not-allowed; }
+
+        .last-updated {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 800px) {
+            .grid       { grid-template-columns: repeat(2, 1fr); }
+            .span-2     { grid-column: span 2; }
+            .span-4     { grid-column: span 2; }
+            .chart-row  { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .container { padding: 18px; }
+            .grid      { grid-template-columns: 1fr; }
+            .span-2, .span-4 { grid-column: auto; }
+            canvas     { height: 220px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <span class="spacer"></span>
+            <h1><span class="btc">&#8383;</span>lockwatch</h1>
+            <span class="spacer" style="text-align:right;">
+                <a class="help-link" href="info.html">? About metrics</a>
+            </span>
+        </div>
+        <p class="subtitle">A live, single-page snapshot of the Bitcoin network — pulling real-time market data (price, market cap, volume, ATH), on-chain network health (block height, mempool, fees, hash rate, difficulty), and the Crypto Fear &amp; Greed sentiment index from public, keyless data sources. Auto-refreshes every 60 seconds, so the numbers you see are never more than a minute stale.</p>
+
+        <div id="status" class="data-status"><span class="dot"></span><span id="statusMsg">Loading…</span></div>
+
+        <h2>Market</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="lbl">Price (USD)</div>
+                <div id="price" class="val">&mdash;</div>
+                <div id="priceChange" class="sub">&mdash;</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Market Cap</div>
+                <div id="mcap" class="val">&mdash;</div>
+                <div id="mcapRank" class="sub">&mdash;</div>
+            </div>
+            <div class="card">
+                <div class="lbl">24h Volume</div>
+                <div id="vol24" class="val">&mdash;</div>
+                <div class="sub">USD</div>
+            </div>
+            <div class="card">
+                <div class="lbl">All-Time High</div>
+                <div id="ath" class="val">&mdash;</div>
+                <div id="athDelta" class="sub">&mdash;</div>
+            </div>
+        </div>
+
+        <h2>Network</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="lbl">Block Height</div>
+                <div id="blockHeight" class="val">&mdash;</div>
+                <div id="blockTime" class="sub">&mdash;</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Mempool Size</div>
+                <div id="mempoolSize" class="val">&mdash;</div>
+                <div id="mempoolWeight" class="sub">&mdash;</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Recommended Fee</div>
+                <div id="feeFast" class="val">&mdash;</div>
+                <div id="feeSlow" class="sub">&mdash;</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Difficulty Adjustment</div>
+                <div id="diffAdj" class="val">&mdash;</div>
+                <div id="diffEta" class="sub">&mdash;</div>
+            </div>
+            <div class="card span-2">
+                <div class="lbl">Hash Rate (current)</div>
+                <div id="hashrate" class="val">&mdash;</div>
+                <div class="sub">7-day avg, EH/s</div>
+            </div>
+            <div class="card span-2">
+                <div class="lbl">Circulating Supply</div>
+                <div id="supply" class="val">&mdash;</div>
+                <div id="supplyPct" class="sub">&mdash;</div>
+            </div>
+        </div>
+
+        <h2>Sentiment</h2>
+        <div class="grid">
+            <div class="card gauge span-2">
+                <div class="lbl">Fear &amp; Greed Index</div>
+                <svg class="gauge-svg" viewBox="0 0 160 88">
+                    <defs>
+                        <linearGradient id="fgGrad" x1="0" x2="1" y1="0" y2="0">
+                            <stop offset="0%"   stop-color="#d32f2f"/>
+                            <stop offset="33%"  stop-color="#f7931a"/>
+                            <stop offset="66%"  stop-color="#d4a017"/>
+                            <stop offset="100%" stop-color="#1a9e4a"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 16 80 A 64 64 0 0 1 144 80" fill="none" stroke="#eee" stroke-width="14" stroke-linecap="round"/>
+                    <path d="M 16 80 A 64 64 0 0 1 144 80" fill="none" stroke="url(#fgGrad)" stroke-width="14" stroke-linecap="round" id="fgArc" stroke-dasharray="201" stroke-dashoffset="201"/>
+                    <line id="fgNeedle" x1="80" y1="80" x2="80" y2="22" stroke="#1b1f4b" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                    <circle cx="80" cy="80" r="4" fill="#1b1f4b"/>
+                </svg>
+                <div id="fgValue" class="gauge-label">&mdash;</div>
+                <div id="fgClass" class="gauge-classification">&mdash;</div>
+            </div>
+            <div class="card span-2">
+                <div class="lbl">Fear &amp; Greed (30 days)</div>
+                <div class="chart-wrap"><canvas id="fgChart"></canvas></div>
+            </div>
+        </div>
+
+        <h2>History</h2>
+        <div class="chart-row">
+            <div class="card">
+                <div class="lbl">Price (90 days, USD)</div>
+                <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+            </div>
+            <div class="card">
+                <div class="lbl">Mempool Fee Histogram (vB)</div>
+                <div class="chart-wrap"><canvas id="feeChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="refresh-row">
+            <button id="refreshBtn" class="refresh" type="button">Refresh</button>
+            <span id="lastUpdated" class="last-updated">&mdash;</span>
+        </div>
+
+        <footer class="footer">
+            <a href="https://observation-deck.netlify.app/">Observation Deck</a> &nbsp;|&nbsp;
+            <a href="info.html">About metrics</a> &nbsp;|&nbsp;
+            <a href="https://github.com/00xJS/Blockwatch">GitHub</a><br>
+            Data: <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a> ·
+            <a href="https://mempool.space/" target="_blank" rel="noopener">mempool.space</a> ·
+            <a href="https://www.blockchain.com/explorer" target="_blank" rel="noopener">Blockchain.com</a> ·
+            <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a>
+        </footer>
+    </div>
+
+<script>
+const TARGET_SUPPLY = 21_000_000;
+
+const statusEl  = document.getElementById('status');
+const statusMsg = document.getElementById('statusMsg');
+const refreshBtn = document.getElementById('refreshBtn');
+const lastUpdatedEl = document.getElementById('lastUpdated');
+let priceChart = null, feeChart = null, fgChart = null;
+
+function setStatus(kind, msg) {
+    statusEl.className = 'data-status ' + (kind || '');
+    statusMsg.textContent = msg;
+}
+
+async function fetchJSON(url, opts = {}) {
+    const res = await fetch(url, opts);
+    if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}`);
+    return res.json();
+}
+async function fetchText(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}`);
+    return res.text();
+}
+
+function fmtUSD(v, digits = 0) {
+    return v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: digits });
+}
+function fmtCompact(v) {
+    return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(v);
+}
+function fmtPct(v, digits = 2) {
+    return (v >= 0 ? '+' : '') + (v).toFixed(digits) + '%';
+}
+function setText(id, text, dir) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.classList.remove('up', 'down', 'amber');
+    if (dir) el.classList.add(dir);
+}
+
+async function loadMarket() {
+    const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false');
+    const m = data.market_data;
+    setText('price', fmtUSD(m.current_price.usd, 0));
+    const ch = m.price_change_percentage_24h;
+    setText('priceChange', `${fmtPct(ch)} 24h`, ch >= 0 ? 'up' : 'down');
+    setText('mcap', fmtUSD(m.market_cap.usd, 0));
+    setText('mcapRank', `Rank #${data.market_cap_rank}`);
+    setText('vol24', fmtUSD(m.total_volume.usd, 0));
+    setText('ath', fmtUSD(m.ath.usd, 0));
+    const athDelta = m.ath_change_percentage.usd;
+    setText('athDelta', `${fmtPct(athDelta)} from ATH`, athDelta >= -5 ? 'up' : 'down');
+    setText('supply', `${fmtCompact(m.circulating_supply)} BTC`);
+    setText('supplyPct', `${(m.circulating_supply / TARGET_SUPPLY * 100).toFixed(2)}% of 21M cap`);
+}
+
+async function loadPriceHistory() {
+    const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=90&interval=daily');
+    const labels = data.prices.map(p => new Date(p[0]).toISOString().slice(5, 10));
+    const values = data.prices.map(p => p[1]);
+    if (priceChart) priceChart.destroy();
+    priceChart = new Chart(document.getElementById('priceChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'BTC/USD',
+                data: values,
+                borderColor: '#f7931a',
+                backgroundColor: 'rgba(247,147,26,0.15)',
+                borderWidth: 2,
+                fill: true,
+                pointRadius: 0,
+                tension: 0.2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { maxTicksLimit: 8 }, grid: { display: false } },
+                y: { ticks: { callback: v => fmtUSD(v, 0) }, grid: { color: 'rgba(0,0,0,0.05)' } }
+            }
+        }
+    });
+}
+
+async function loadNetwork() {
+    const [tip, mempool, fees, hashrate, diffAdj] = await Promise.all([
+        fetchText('https://mempool.space/api/blocks/tip/height'),
+        fetchJSON('https://mempool.space/api/mempool'),
+        fetchJSON('https://mempool.space/api/v1/fees/recommended'),
+        fetchJSON('https://mempool.space/api/v1/mining/hashrate/3d'),
+        fetchJSON('https://mempool.space/api/v1/difficulty-adjustment'),
+    ]);
+
+    setText('blockHeight', Number(tip).toLocaleString());
+
+    const tipBlock = await fetchJSON(`https://mempool.space/api/v1/blocks/${tip}`).catch(() => null);
+    if (tipBlock && tipBlock.length) {
+        const ts = tipBlock[0].timestamp;
+        const ago = Math.max(0, Math.round((Date.now() / 1000 - ts) / 60));
+        setText('blockTime', `${ago} min ago`);
+    } else {
+        setText('blockTime', '—');
+    }
+
+    setText('mempoolSize', `${fmtCompact(mempool.count)} tx`);
+    const vsizeMB = mempool.vsize / 1_000_000;
+    setText('mempoolWeight', `${vsizeMB.toFixed(2)} vMB`);
+
+    setText('feeFast', `${fees.fastestFee} sat/vB`);
+    setText('feeSlow', `Hour: ${fees.hourFee} · Eco: ${fees.economyFee} sat/vB`);
+
+    const hr = hashrate.currentHashrate / 1e18;
+    setText('hashrate', `${hr.toFixed(2)} EH/s`);
+
+    const adj = diffAdj.difficultyChange;
+    setText('diffAdj', `${fmtPct(adj)}`, adj >= 0 ? 'up' : 'down');
+    const days = Math.max(0, Math.round(diffAdj.remainingTime / (1000 * 60 * 60 * 24)));
+    setText('diffEta', `~${days}d to next adjustment`);
+
+    return mempool;
+}
+
+async function loadFeeHistogram(mempool) {
+    const histo = mempool.fee_histogram || [];
+    const buckets = [
+        { label: '1-5',    min: 1,   max: 5,   v: 0 },
+        { label: '5-10',   min: 5,   max: 10,  v: 0 },
+        { label: '10-20',  min: 10,  max: 20,  v: 0 },
+        { label: '20-50',  min: 20,  max: 50,  v: 0 },
+        { label: '50-100', min: 50,  max: 100, v: 0 },
+        { label: '100+',   min: 100, max: Infinity, v: 0 },
+    ];
+    histo.forEach(([fee, vsize]) => {
+        const b = buckets.find(b => fee >= b.min && fee < b.max);
+        if (b) b.v += vsize / 1_000_000;
+    });
+
+    if (feeChart) feeChart.destroy();
+    feeChart = new Chart(document.getElementById('feeChart'), {
+        type: 'bar',
+        data: {
+            labels: buckets.map(b => b.label),
+            datasets: [{
+                label: 'vMB',
+                data: buckets.map(b => b.v),
+                backgroundColor: '#1b1f4b',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)} vMB` } }
+            },
+            scales: {
+                x: { grid: { display: false }, title: { display: true, text: 'sat/vB', color: '#666', font: { size: 11 } } },
+                y: { ticks: { callback: v => v + ' vMB' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+            }
+        }
+    });
+}
+
+function fgClassification(v) {
+    if (v <= 24) return { label: 'Extreme Fear', color: '#d32f2f' };
+    if (v <= 49) return { label: 'Fear',         color: '#f7931a' };
+    if (v <= 54) return { label: 'Neutral',      color: '#d4a017' };
+    if (v <= 74) return { label: 'Greed',        color: '#7ec544' };
+    return                 { label: 'Extreme Greed', color: '#1a9e4a' };
+}
+
+async function loadFearGreed() {
+    const data = await fetchJSON('https://api.alternative.me/fng/?limit=30');
+    const list = (data.data || []).slice().reverse();
+    if (!list.length) return;
+    const latest = list[list.length - 1];
+    const v = parseInt(latest.value, 10);
+    const cls = fgClassification(v);
+
+    document.getElementById('fgValue').textContent = v;
+    document.getElementById('fgValue').style.color = cls.color;
+    document.getElementById('fgClass').textContent = cls.label;
+
+    const arc = document.getElementById('fgArc');
+    const arcLen = 201;
+    arc.setAttribute('stroke-dashoffset', String(arcLen * (1 - v / 100)));
+    const angle = -90 + (v / 100) * 180;
+    document.getElementById('fgNeedle').setAttribute('transform', `rotate(${angle} 80 80)`);
+
+    const labels = list.map(d => new Date(d.timestamp * 1000).toISOString().slice(5, 10));
+    const values = list.map(d => parseInt(d.value, 10));
+    if (fgChart) fgChart.destroy();
+    fgChart = new Chart(document.getElementById('fgChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'F&G',
+                data: values,
+                borderColor: '#c23e8c',
+                backgroundColor: 'rgba(194,62,140,0.15)',
+                borderWidth: 2,
+                fill: true,
+                pointRadius: 0,
+                tension: 0.25,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { maxTicksLimit: 8 }, grid: { display: false } },
+                y: { min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } }
+            }
+        }
+    });
+}
+
+async function refresh() {
+    refreshBtn.disabled = true;
+    setStatus('', 'Fetching live data…');
+    const results = await Promise.allSettled([
+        loadMarket(),
+        loadPriceHistory(),
+        loadNetwork().then(loadFeeHistogram),
+        loadFearGreed(),
+    ]);
+    const failed = results.filter(r => r.status === 'rejected');
+    const updated = new Date().toLocaleTimeString();
+    lastUpdatedEl.textContent = `Updated ${updated}`;
+    if (failed.length === 0) {
+        setStatus('ok', 'Live · all sources reporting');
+    } else if (failed.length === results.length) {
+        setStatus('error', `All sources failed: ${failed[0].reason?.message || 'unknown'}`);
+    } else {
+        setStatus('error', `${failed.length} of ${results.length} sources failed`);
+        failed.forEach(f => console.warn('OnChain source error:', f.reason));
+    }
+    refreshBtn.disabled = false;
+}
+
+refreshBtn.addEventListener('click', refresh);
+
+refresh();
+setInterval(refresh, 60_000);
+</script>
+</body>
+</html>

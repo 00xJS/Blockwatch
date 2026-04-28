@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockwatch · About the Metrics</title>
+    <style>
+        :root {
+            --primary:      #1b1f4b;
+            --accent:       #f7931a;
+            --accent-2:     #c23e8c;
+            --green:        #1a9e4a;
+            --red:          #d32f2f;
+            --amber:        #d4a017;
+            --border:       #d4d0e0;
+            --bg:           #f4f5f7;
+            --card:         #ffffff;
+            --text:         #222;
+            --muted:        #666;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 880px;
+            margin: auto;
+            padding: 28px 32px;
+            background: var(--card);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.09);
+            border-radius: 14px;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .back-link:hover { background: var(--accent-2); }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            color: var(--text);
+            font-size: 1.05rem;
+            margin: 28px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin: 18px 0 4px;
+            font-size: 1rem;
+        }
+
+        p, li { font-size: 14.5px; color: var(--text); }
+
+        .metric {
+            background: #fafbfd;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin: 12px 0;
+        }
+
+        .metric-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .metric-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.02rem;
+        }
+        .metric-source {
+            margin-left: auto;
+            font-size: 11.5px;
+            color: var(--muted);
+            background: #eef0f5;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric .why {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+            font-size: 13.5px;
+            color: var(--muted);
+        }
+        .metric .why strong { color: var(--primary); }
+
+        code {
+            background: #eef0f5;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .callout {
+            background: #fff7ef;
+            border: 1px solid #f3d6b3;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 13.5px;
+            color: #6e4a17;
+        }
+        .callout strong { color: var(--accent); }
+
+        details {
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fafbfd;
+        }
+        details summary {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        details[open] summary { border-bottom: 1px solid var(--border); }
+        details > p, details > ul { padding: 0 14px 12px; margin: 8px 0 0; }
+
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            padding: 12px 0 0;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .footer a       { color: var(--accent); text-decoration: none; }
+        .footer a:hover { color: var(--accent-2); }
+
+        @media (max-width: 600px) {
+            .container { padding: 18px; }
+            .top-bar   { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .metric-source { margin-left: 0; }
+            .metric-head   { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <h1>About the Metrics</h1>
+            <a class="back-link" href="index.html">← Back to Blockwatch</a>
+        </div>
+        <p style="color: var(--muted); margin: 6px 0 18px;">Plain-English explanations for everything on the dashboard — what each number measures, where it comes from, and why it matters.</p>
+
+        <h2>Market</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Price (USD)</span>
+                <span class="metric-source">CoinGecko</span>
+            </div>
+            <p>The latest USD spot price of one bitcoin, averaged across the major exchanges CoinGecko tracks. The 24-hour change underneath shows how price has moved since this time yesterday.</p>
+            <div class="why"><strong>Why it matters:</strong> the headline number — though arguably the least informative one on this page once you understand the others.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Market Cap</span>
+                <span class="metric-source">CoinGecko</span>
+            </div>
+            <p>Price × circulating supply. With ~19.8M BTC in circulation, market cap is roughly 19.8M × current price. The "Rank" tag shows where Bitcoin sits among all crypto assets by market cap (it has held #1 since inception).</p>
+            <div class="why"><strong>Why it matters:</strong> it's the standard comparison metric across crypto and is often used to compare BTC's "size" to publicly traded companies, gold, or M2 money supply.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">24h Volume</span>
+                <span class="metric-source">CoinGecko</span>
+            </div>
+            <p>Total USD-equivalent volume traded across exchanges over the last 24 hours.</p>
+            <div class="why"><strong>Why it matters:</strong> volume tells you how active the market is. Rising price on rising volume is a stronger signal than the same price move on thin volume.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">All-Time High</span>
+                <span class="metric-source">CoinGecko</span>
+            </div>
+            <p>The highest price BTC has ever traded at. The percentage shows how far the current price is from that peak (negative means below).</p>
+            <div class="why"><strong>Why it matters:</strong> a quick gauge of whether the market is in price discovery (near or above ATH) or in a drawdown.</div>
+        </div>
+
+        <h2>Network</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Block Height</span>
+                <span class="metric-source">mempool.space</span>
+            </div>
+            <p>The number of blocks that have been mined since the Bitcoin network started in January 2009. Each block is a batch of transactions added to the chain roughly every 10 minutes. Height 1,000,000 is expected around the year 2034.</p>
+            <div class="why"><strong>Why it matters:</strong> it's the canonical clock of the Bitcoin network. The "X min ago" timestamp underneath shows how long since the last block — &gt;30 minutes between blocks is unusual and often correlates with hash rate drops.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Mempool Size</span>
+                <span class="metric-source">mempool.space</span>
+            </div>
+            <p>The mempool ("memory pool") is the global queue of transactions that have been broadcast but haven't been included in a block yet. The two numbers measure it differently:</p>
+            <ul>
+                <li><strong>tx count</strong> — how many transactions are waiting</li>
+                <li><strong>vMB</strong> — the total <em>virtual size</em> of those transactions in megabytes (relevant because miners pack blocks by size, not transaction count)</li>
+            </ul>
+            <div class="why"><strong>Why it matters:</strong> a large, growing mempool means demand for blockspace is exceeding supply — fees rise. An empty mempool means cheap transactions but also signals reduced network activity.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Recommended Fee</span>
+                <span class="metric-source">mempool.space</span>
+            </div>
+            <p>Fees are paid in satoshis per virtual byte (sat/vB). A typical transaction is ~140 vB, so a 10 sat/vB fee means roughly 1,400 sats (~$1 at $70k BTC) for that transaction.</p>
+            <ul>
+                <li><strong>Fastest</strong> — likely confirms in the next block (~10 minutes)</li>
+                <li><strong>Hour</strong> — likely confirms within an hour</li>
+                <li><strong>Eco</strong> — cheapest tier; may take many hours during congestion</li>
+            </ul>
+            <div class="why"><strong>Why it matters:</strong> if you're sending BTC, this tells you what to pay. If you're observing the network, fee levels are a real-time demand gauge — fees spike during ordinal/runes minting events, ETF inflows, or panic moves.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Difficulty Adjustment</span>
+                <span class="metric-source">mempool.space</span>
+            </div>
+            <p>Bitcoin auto-tunes how hard it is to mine a block every 2,016 blocks (~2 weeks). If blocks have been coming faster than 10 minutes, difficulty goes up. Slower, it goes down. This metric shows the projected change at the next adjustment and the ETA.</p>
+            <div class="why"><strong>Why it matters:</strong> a positive adjustment means more miners are coming online — bullish for security and often correlated with miner confidence in price. Big negative adjustments (rare) usually signal miner capitulation.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Hash Rate</span>
+                <span class="metric-source">mempool.space</span>
+            </div>
+            <p>The total computational power miners are pointing at the Bitcoin network, measured in <strong>EH/s</strong> — exahashes per second. One exahash = 10<sup>18</sup> hashes. As of 2025, the network runs ~600+ EH/s.</p>
+            <div class="why"><strong>Why it matters:</strong> hash rate is Bitcoin's security budget. More hash rate = more expensive to attack the network. Sustained hash rate growth signals miner profitability and long-term confidence; a sharp drop usually means miners shut off (price crash, energy event, regulation).</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Circulating Supply</span>
+                <span class="metric-source">CoinGecko</span>
+            </div>
+            <p>How many BTC have been mined to date, out of the hard-capped 21 million. Approximately 450 new BTC enter circulation per day (post the April 2024 halving), and that rate halves every ~4 years.</p>
+            <div class="why"><strong>Why it matters:</strong> Bitcoin's fixed supply schedule is the foundation of its scarcity argument. The "% of 21M cap" number ticks up slowly — the last fraction of a bitcoin won't be mined until ~2140.</div>
+        </div>
+
+        <h2>Sentiment</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Fear &amp; Greed Index</span>
+                <span class="metric-source">alternative.me</span>
+            </div>
+            <p>A composite 0–100 score blending volatility, market momentum, social sentiment, dominance, and Google Trends.</p>
+            <ul>
+                <li><strong>0–24 Extreme Fear</strong> — historically near local bottoms</li>
+                <li><strong>25–49 Fear</strong></li>
+                <li><strong>50–54 Neutral</strong></li>
+                <li><strong>55–74 Greed</strong></li>
+                <li><strong>75–100 Extreme Greed</strong> — historically near local tops</li>
+            </ul>
+            <div class="why"><strong>Why it matters:</strong> a contrarian indicator. Warren Buffett's "be fearful when others are greedy and greedy when others are fearful" rule, expressed as a single number. The 30-day chart next to the gauge shows how sentiment has shifted recently.</div>
+        </div>
+
+        <h2>History</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Price (90 days)</span>
+                <span class="metric-source">CoinGecko</span>
+            </div>
+            <p>BTC closing price for the last 90 days. Daily granularity.</p>
+            <div class="why"><strong>Why it matters:</strong> context for the headline price — is the current number a breakout, a pullback, or chop?</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Mempool Fee Histogram</span>
+                <span class="metric-source">mempool.space</span>
+            </div>
+            <p>Distribution of pending transactions across fee buckets, measured in vMB (virtual megabytes). Tall bars in the high-fee buckets mean lots of users are willing to pay up — congestion.</p>
+            <div class="why"><strong>Why it matters:</strong> shows the <em>shape</em> of demand for blockspace, not just the total. If most volume is in the 1–5 sat/vB bucket, eco transactions will confirm soon. If it's clustered at 50+ sat/vB, expect sustained high fees.</div>
+        </div>
+
+        <h2>FAQ</h2>
+
+        <details>
+            <summary>How often does this dashboard refresh?</summary>
+            <p>Every 60 seconds automatically, plus you can hit the <strong>Refresh</strong> button anytime. The "Updated" timestamp shows the last successful pull.</p>
+        </details>
+
+        <details>
+            <summary>Why are some boxes blank or showing errors?</summary>
+            <p>The dashboard pulls from four independent public APIs. If one rate-limits or has a momentary outage, that section will show a dash or stale value while the others keep working. The status bar at the top tells you how many sources reported successfully.</p>
+        </details>
+
+        <details>
+            <summary>Are any of these numbers predictive?</summary>
+            <p>Not really. The Fear &amp; Greed index has shown some contrarian signal historically. Hash rate trends are more useful for long-term security/miner-health analysis than short-term price calls. <strong>None of this is financial advice.</strong></p>
+        </details>
+
+        <details>
+            <summary>What's a satoshi (sat)?</summary>
+            <p>The smallest unit of bitcoin — one hundred-millionth of a BTC. 100,000,000 sats = 1 BTC. Fees are quoted in sats because most transactions cost a fraction of a cent's worth of BTC.</p>
+        </details>
+
+        <details>
+            <summary>What's the difference between vBytes and bytes?</summary>
+            <p>Bitcoin's SegWit upgrade lets transactions discount their witness data. <em>Virtual bytes</em> (vB) is the discounted size used for fee calculation; raw bytes is the literal byte count. Miners pack blocks up to 4 million weight units, which works out to ~1 MB of vsize.</p>
+        </details>
+
+        <details>
+            <summary>Why is hash rate measured as a 7-day average?</summary>
+            <p>Block intervals are random — anywhere from seconds to over an hour. Instantaneous hash rate is impossible to measure directly; it's always estimated from how many blocks were found in a window. A 7-day window smooths out the noise.</p>
+        </details>
+
+        <details>
+            <summary>Where does this data come from?</summary>
+            <ul>
+                <li><a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a> — price, market cap, volume, ATH, supply, 90-day price chart</li>
+                <li><a href="https://mempool.space/" target="_blank" rel="noopener">mempool.space</a> — block height, mempool, fees, hash rate, difficulty</li>
+                <li><a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a> — Fear &amp; Greed Index</li>
+            </ul>
+            <p>All endpoints are keyless and public. Nothing about you or your activity is sent anywhere — the dashboard is pure client-side JavaScript talking to public APIs.</p>
+        </details>
+
+        <div class="callout"><strong>Educational use only.</strong> Nothing on this dashboard is financial advice.</div>
+
+        <footer class="footer">
+            <a href="index.html">← Back to Blockwatch</a> &nbsp;|&nbsp;
+            <a href="https://observation-deck.netlify.app/">Observation Deck</a> &nbsp;|&nbsp;
+            <a href="https://github.com/00xJS/Blockwatch">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>
