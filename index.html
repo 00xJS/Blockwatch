@@ -282,6 +282,30 @@
             </div>
         </div>
 
+        <h2>Bitcoin vs. US Debt</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="lbl">US National Debt</div>
+                <div id="debtTotal" class="val">&mdash;</div>
+                <div id="debtAsOf" class="sub">&mdash;</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Required BTC Price</div>
+                <div id="debtPerBtc" class="val">&mdash;</div>
+                <div class="sub">debt &divide; circulating supply</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Multiple of Current Price</div>
+                <div id="debtMultCurrent" class="val">&mdash;</div>
+                <div class="sub">how high BTC must climb</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Multiple of All-Time High</div>
+                <div id="debtMultAth" class="val">&mdash;</div>
+                <div class="sub">vs. previous BTC peak</div>
+            </div>
+        </div>
+
         <h2>Network</h2>
         <div class="grid">
             <div class="card">
@@ -367,7 +391,8 @@
             Data: <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a> ·
             <a href="https://mempool.space/" target="_blank" rel="noopener">mempool.space</a> ·
             <a href="https://www.blockchain.com/explorer" target="_blank" rel="noopener">Blockchain.com</a> ·
-            <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a>
+            <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a> ·
+            <a href="https://fiscaldata.treasury.gov/" target="_blank" rel="noopener">TreasuryDirect</a>
         </footer>
     </div>
 
@@ -412,6 +437,10 @@ function setText(id, text, dir) {
     if (dir) el.classList.add(dir);
 }
 
+// Cache key market values so other loaders (e.g. loadMacroDebt) can
+// derive figures from them without re-hitting CoinGecko.
+let marketSnapshot = null;
+
 async function loadMarket() {
     const data = await fetchJSON('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false');
     const m = data.market_data;
@@ -426,6 +455,43 @@ async function loadMarket() {
     setText('athDelta', `${fmtPct(athDelta)} from ATH`, athDelta >= -5 ? 'up' : 'down');
     setText('supply', `${fmtCompact(m.circulating_supply)} BTC`);
     setText('supplyPct', `${(m.circulating_supply / TARGET_SUPPLY * 100).toFixed(2)}% of 21M cap`);
+
+    marketSnapshot = {
+        price:  m.current_price.usd,
+        ath:    m.ath.usd,
+        supply: m.circulating_supply,
+    };
+}
+
+// US national debt vs. Bitcoin supply.
+// Source: TreasuryDirect "Debt to the Penny" — the official daily total
+// of US public debt, exposed via the Treasury Department's open data API
+// (no key, CORS-friendly, updated each business day).
+async function loadMacroDebt() {
+    if (!marketSnapshot) throw new Error('market data not yet loaded');
+    const url = 'https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny' +
+                '?sort=-record_date&page[size]=1';
+    const data = await fetchJSON(url);
+    const latest = data?.data?.[0];
+    if (!latest) throw new Error('TreasuryDirect: empty response');
+
+    const totalDebt = parseFloat(latest.tot_pub_debt_out_amt);
+    if (!Number.isFinite(totalDebt) || totalDebt <= 0) {
+        throw new Error('TreasuryDirect: bad debt value');
+    }
+
+    const dateLabel = new Date(latest.record_date + 'T00:00:00Z')
+        .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    setText('debtTotal', '$' + fmtCompact(totalDebt));
+    setText('debtAsOf', `as of ${dateLabel}`);
+
+    const pricePerBTC  = totalDebt / marketSnapshot.supply;
+    const multCurrent  = pricePerBTC / marketSnapshot.price;
+    const multATH      = pricePerBTC / marketSnapshot.ath;
+
+    setText('debtPerBtc',     '$' + fmtCompact(pricePerBTC));
+    setText('debtMultCurrent', `${multCurrent.toFixed(1)}× current`);
+    setText('debtMultAth',     `${multATH.toFixed(1)}× ATH`);
 }
 
 async function loadPriceHistory() {
@@ -600,7 +666,7 @@ async function refresh() {
     refreshBtn.disabled = true;
     setStatus('', 'Fetching live data…');
     const results = await Promise.allSettled([
-        loadMarket(),
+        loadMarket().then(loadMacroDebt),
         loadPriceHistory(),
         loadNetwork().then(loadFeeHistogram),
         loadFearGreed(),

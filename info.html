@@ -224,6 +224,44 @@
             <div class="why"><strong>Why it matters:</strong> a quick gauge of whether the market is in price discovery (near or above ATH) or in a drawdown.</div>
         </div>
 
+        <h2>Bitcoin vs. US Debt</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">US National Debt</span>
+                <span class="metric-source">TreasuryDirect</span>
+            </div>
+            <p>The total US public debt outstanding, sourced from the Treasury Department's official "Debt to the Penny" feed. Updated each business day. As of 2025, this number sits north of $36 trillion and grows by roughly $1 trillion every ~100 days.</p>
+            <div class="why"><strong>Why it matters:</strong> the denominator of every macro question about fiat purchasing power. Whether you think Bitcoin is "digital gold" or just a speculative asset, the trajectory of this number is the backdrop against which the case is argued.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Required BTC Price</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>Total US debt &divide; circulating Bitcoin supply. Answers a thought experiment: <em>if every existing bitcoin had to absorb the entire US debt, how much would each one be worth?</em> Pure arithmetic — no claim that this will happen, just a way to express debt scale in BTC terms.</p>
+            <div class="why"><strong>Why it matters:</strong> reframes "is BTC overvalued?" against a tangible macro denominator. Even with debt at $36T and ~19.8M BTC outstanding, the per-coin number lands well above current price — context for the long-running "monetary asset" thesis.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Multiple of Current Price</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>How many times higher BTC's current price would need to be for one bitcoin to equal `debt &divide; supply`. Live ratio — falls when BTC rallies, rises when debt grows or BTC drops.</p>
+            <div class="why"><strong>Why it matters:</strong> a single number that tracks how the "BTC vs. debt" gap is closing or widening over time. Compare this to the same metric six months ago to see whether BTC is gaining or losing ground against the macro backdrop.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Multiple of All-Time High</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>Same calculation but anchored to BTC's all-time high instead of the live price. Strips out short-term volatility — answers "even at peak prices, how far are we from this benchmark?"</p>
+            <div class="why"><strong>Why it matters:</strong> ATH is a more stable reference than spot price. If this multiple is still meaningfully above 1×, the macro "gap" persists even at past peaks.</div>
+        </div>
+
         <h2>Network</h2>
 
         <div class="metric">
@@ -365,6 +403,7 @@
                 <li><a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a> — price, market cap, volume, ATH, supply, 90-day price chart</li>
                 <li><a href="https://mempool.space/" target="_blank" rel="noopener">mempool.space</a> — block height, mempool, fees, hash rate, difficulty</li>
                 <li><a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a> — Fear &amp; Greed Index</li>
+                <li><a href="https://fiscaldata.treasury.gov/" target="_blank" rel="noopener">TreasuryDirect</a> — official US national debt (Debt to the Penny feed)</li>
             </ul>
             <p>All endpoints are keyless and public. Nothing about you or your activity is sent anywhere — the dashboard is pure client-side JavaScript talking to public APIs.</p>
         </details>
