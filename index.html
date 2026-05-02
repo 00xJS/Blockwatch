@@ -282,8 +282,37 @@
             </div>
         </div>
 
+        <h2>Bitcoin vs. Gold</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="lbl">Gold Price</div>
+                <div id="goldPrice" class="val">&mdash;</div>
+                <div id="goldChange" class="sub">per troy oz</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Gold Market Cap</div>
+                <div id="goldMcap" class="val">&mdash;</div>
+                <div class="sub">~6.835B oz above ground</div>
+            </div>
+            <div class="card">
+                <div class="lbl">BTC at Gold Parity</div>
+                <div id="btcGoldParity" class="val">&mdash;</div>
+                <div class="sub">to match gold's market cap</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Multiple of Current Price</div>
+                <div id="goldMultCurrent" class="val">&mdash;</div>
+                <div class="sub">to reach gold parity</div>
+            </div>
+        </div>
+
         <h2>Bitcoin vs. US Debt</h2>
         <div class="grid">
+            <div class="card">
+                <div class="lbl">$1T Pace</div>
+                <div id="debtPace" class="val">&mdash;</div>
+                <div id="debtPaceSub" class="sub">to add another trillion</div>
+            </div>
             <div class="card">
                 <div class="lbl">US National Debt</div>
                 <div id="debtTotal" class="val">&mdash;</div>
@@ -298,35 +327,6 @@
                 <div class="lbl">Multiple of Current Price</div>
                 <div id="debtMultCurrent" class="val">&mdash;</div>
                 <div class="sub">how high BTC must climb</div>
-            </div>
-            <div class="card">
-                <div class="lbl">Multiple of All-Time High</div>
-                <div id="debtMultAth" class="val">&mdash;</div>
-                <div class="sub">vs. previous BTC peak</div>
-            </div>
-        </div>
-
-        <h2>Bitcoin vs. Gold</h2>
-        <div class="grid">
-            <div class="card">
-                <div class="lbl">Gold Price</div>
-                <div id="goldPrice" class="val">&mdash;</div>
-                <div id="goldChange" class="sub">per troy oz</div>
-            </div>
-            <div class="card">
-                <div class="lbl">Gold Market Cap</div>
-                <div id="goldMcap" class="val">&mdash;</div>
-                <div class="sub">~6.835B oz above ground</div>
-            </div>
-            <div class="card">
-                <div class="lbl">BTC % of Gold</div>
-                <div id="btcGoldPct" class="val">&mdash;</div>
-                <div class="sub">market-cap dominance</div>
-            </div>
-            <div class="card">
-                <div class="lbl">BTC at Gold Parity</div>
-                <div id="btcGoldParity" class="val">&mdash;</div>
-                <div id="btcGoldParityDelta" class="sub">required price</div>
             </div>
         </div>
 
@@ -515,13 +515,48 @@ async function loadMacroDebt() {
     setText('debtTotal', '$' + fmtCompact(totalDebt));
     setText('debtAsOf', `as of ${dateLabel}`);
 
-    const pricePerBTC  = totalDebt / marketSnapshot.supply;
-    const multCurrent  = pricePerBTC / marketSnapshot.price;
-    const multATH      = pricePerBTC / marketSnapshot.ath;
+    const pricePerBTC = totalDebt / marketSnapshot.supply;
+    const multCurrent = pricePerBTC / marketSnapshot.price;
 
-    setText('debtPerBtc',     '$' + fmtCompact(pricePerBTC));
+    setText('debtPerBtc',      '$' + fmtCompact(pricePerBTC));
     setText('debtMultCurrent', `${multCurrent.toFixed(1)}× current`);
-    setText('debtMultAth',     `${multATH.toFixed(1)}× ATH`);
+
+    // $1T Pace — second TreasuryDirect call for the debt total ~1 year
+    // ago, then extrapolate the daily growth rate to "days per trillion."
+    // Wrapped in try/catch so a failed second call doesn't black out
+    // the rest of the section.
+    try {
+        const today   = new Date(latest.record_date + 'T00:00:00Z');
+        const yearAgo = new Date(today);
+        yearAgo.setUTCFullYear(yearAgo.getUTCFullYear() - 1);
+        const targetStr = yearAgo.toISOString().slice(0, 10);
+
+        const histUrl = 'https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny' +
+                        `?filter=record_date:gte:${targetStr}&sort=record_date&page[size]=1`;
+        const histData = await fetchJSON(histUrl);
+        const oldRecord = histData?.data?.[0];
+        if (!oldRecord) throw new Error('no historical record');
+
+        const oldDebt = parseFloat(oldRecord.tot_pub_debt_out_amt);
+        const oldDate = new Date(oldRecord.record_date + 'T00:00:00Z');
+        const daysBetween = (today - oldDate) / 86400000;
+        const debtGrowth  = totalDebt - oldDebt;
+
+        if (debtGrowth <= 0 || daysBetween <= 0) {
+            throw new Error('no measurable growth');
+        }
+
+        const daysPerTrillion = (1_000_000_000_000 * daysBetween) / debtGrowth;
+        const days = Math.round(daysPerTrillion);
+        const trillionsPerYear = (debtGrowth / 1_000_000_000_000) * (365.25 / daysBetween);
+
+        setText('debtPace',    `${days} days`);
+        setText('debtPaceSub', `+$${trillionsPerYear.toFixed(2)}T/year recent pace`);
+    } catch (err) {
+        console.warn('Debt pace calculation failed:', err.message);
+        setText('debtPace',    '—');
+        setText('debtPaceSub', 'rolling 1-year pace unavailable');
+    }
 }
 
 // Bitcoin vs. Gold market-cap comparison.
@@ -541,24 +576,20 @@ async function loadMacroGold() {
         throw new Error('CoinGecko: bad gold price');
     }
 
-    const goldMcap   = goldPrice * TOTAL_GOLD_OZ;
-    const dominance  = (marketSnapshot.marketCap / goldMcap) * 100;
-    const parity     = goldMcap / marketSnapshot.supply;
-    const parityPct  = ((parity - marketSnapshot.price) / marketSnapshot.price) * 100;
+    const goldMcap         = goldPrice * TOTAL_GOLD_OZ;
+    const parity           = goldMcap / marketSnapshot.supply;
+    const goldMultCurrent  = parity / marketSnapshot.price;
 
-    setText('goldPrice', fmtUSD(goldPrice, 0));
+    setText('goldMcap',         '$' + fmtCompact(goldMcap));
+    setText('btcGoldParity',    '$' + fmtCompact(parity));
+    setText('goldMultCurrent', `${goldMultCurrent.toFixed(1)}× current`);
+    setText('goldPrice',        fmtUSD(goldPrice, 0));
     if (Number.isFinite(goldChange)) {
         setText('goldChange', `${fmtPct(goldChange)} 24h · per troy oz`,
                 goldChange >= 0 ? 'up' : 'down');
     } else {
         setText('goldChange', 'per troy oz');
     }
-    setText('goldMcap',   '$' + fmtCompact(goldMcap));
-    setText('btcGoldPct', `${dominance.toFixed(2)}%`);
-    setText('btcGoldParity', '$' + fmtCompact(parity));
-    setText('btcGoldParityDelta',
-            `${parityPct >= 0 ? '+' : ''}${parityPct.toFixed(0)}% from current`,
-            parityPct >= 0 ? 'up' : 'down');
 }
 
 async function loadPriceHistory() {

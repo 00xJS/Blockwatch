@@ -3,8 +3,8 @@
 A live Bitcoin on-chain dashboard. Surfaces real-time market data, network health, and sentiment in a single page that auto-refreshes every 60 seconds:
 
 - **Market** — price, market cap, 24h volume, ATH, circulating supply (CoinGecko)
-- **Bitcoin vs. US Debt** — total US national debt (TreasuryDirect), the BTC price required to cover it, and multiples of current price and ATH (computed)
-- **Bitcoin vs. Gold** — gold spot price (via PAX Gold), gold market cap (~6.835B oz × price), BTC's % of gold's market cap, and the BTC price required for parity with gold's market cap
+- **Bitcoin vs. Gold** — live gold spot price (via PAX Gold), gold market cap (~6.835B oz × price), the BTC price required for parity with gold's market cap, and the multiple of current price needed to get there
+- **Bitcoin vs. US Debt** — the rolling pace at which the US adds another $1 trillion in debt (year-over-year), total US national debt (TreasuryDirect), the BTC price required to cover it, and the multiple of current price
 - **Network** — block height, mempool size, recommended fees, hash rate, difficulty adjustment ETA, mempool fee histogram (mempool.space)
 - **Sentiment** — Fear &amp; Greed gauge with 30-day history (alternative.me)
 - **History** — 90-day price chart

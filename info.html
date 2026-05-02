@@ -224,7 +224,54 @@
             <div class="why"><strong>Why it matters:</strong> a quick gauge of whether the market is in price discovery (near or above ATH) or in a drawdown.</div>
         </div>
 
+        <h2>Bitcoin vs. Gold</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Gold Price</span>
+                <span class="metric-source">CoinGecko · pax-gold</span>
+            </div>
+            <p>Spot price of gold per troy ounce, sourced via PAX Gold (PAXG) — a 1:1 physically-backed gold token that tracks spot gold within a few basis points. Standard keyless way to pull a gold price client-side without an API key. The 24-hour change shows how the metal has moved since this time yesterday.</p>
+            <div class="why"><strong>Why it matters:</strong> the data anchor of the section. Every other number on these four cards is derived from this one.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Gold Market Cap</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>Gold price × ~6.835 billion troy ounces of above-ground gold. The supply estimate comes from the World Gold Council (~212,582 tonnes × 32,150.7 troy oz/tonne) and updates slowly enough that a fixed constant works fine. As of 2025, this number is in the $18–22 trillion range.</p>
+            <div class="why"><strong>Why it matters:</strong> gold is the historical "monetary asset" benchmark. Its market cap is the standard measuring stick for any new contender — including Bitcoin.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">BTC at Gold Parity</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>The BTC price required for Bitcoin's market cap to match gold's, holding both supplies constant. Calculated as `gold market cap ÷ circulating BTC supply`.</p>
+            <div class="why"><strong>Why it matters:</strong> the Bitcoin-as-digital-gold thesis, expressed as a single price target. Whether you find the thesis compelling or not, this is the number that thesis implies.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Multiple of Current Price</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>How many times higher BTC's current price would need to be to match gold's market cap. Computed as `parity price &divide; current BTC price`. Mirrors the same metric in the debt section, just anchored to gold's market cap instead of US debt.</p>
+            <div class="why"><strong>Why it matters:</strong> single-number summary of the BTC-vs-gold gap. The number shrinks every BTC bull run and grows every drawdown — track it month-over-month to see whether digital gold is catching up to physical gold.</div>
+        </div>
+
         <h2>Bitcoin vs. US Debt</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">$1T Pace</span>
+                <span class="metric-source">TreasuryDirect</span>
+            </div>
+            <p>How many days, on average, the US currently takes to add another trillion dollars of debt. Computed by querying TreasuryDirect for today's debt total <em>and</em> the debt total ~365 days ago, then extrapolating the daily growth rate. The subtitle shows the implied annual pace in trillions per year. As of 2025, the US adds roughly $1T every 100–150 days.</p>
+            <div class="why"><strong>Why it matters:</strong> debt as <em>velocity</em>, not just a static number. The total figure is shocking; the pace is what tells you whether things are accelerating or stabilizing. Watching this card move month-over-month is more informative than watching the headline total tick up.</div>
+        </div>
 
         <div class="metric">
             <div class="metric-head">
@@ -251,53 +298,6 @@
             </div>
             <p>How many times higher BTC's current price would need to be for one bitcoin to equal `debt &divide; supply`. Live ratio — falls when BTC rallies, rises when debt grows or BTC drops.</p>
             <div class="why"><strong>Why it matters:</strong> a single number that tracks how the "BTC vs. debt" gap is closing or widening over time. Compare this to the same metric six months ago to see whether BTC is gaining or losing ground against the macro backdrop.</div>
-        </div>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span class="metric-name">Multiple of All-Time High</span>
-                <span class="metric-source">Computed</span>
-            </div>
-            <p>Same calculation but anchored to BTC's all-time high instead of the live price. Strips out short-term volatility — answers "even at peak prices, how far are we from this benchmark?"</p>
-            <div class="why"><strong>Why it matters:</strong> ATH is a more stable reference than spot price. If this multiple is still meaningfully above 1×, the macro "gap" persists even at past peaks.</div>
-        </div>
-
-        <h2>Bitcoin vs. Gold</h2>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span class="metric-name">Gold Price</span>
-                <span class="metric-source">CoinGecko · pax-gold</span>
-            </div>
-            <p>Spot price of gold per troy ounce, sourced via PAX Gold (PAXG) — a 1:1 physically-backed gold token that tracks spot gold within a few basis points. Standard keyless way to pull a gold price client-side without an API key. The 24-hour change shows how the metal has moved since this time yesterday.</p>
-            <div class="why"><strong>Why it matters:</strong> the anchor of the section. Every other comparison flows from this number.</div>
-        </div>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span class="metric-name">Gold Market Cap</span>
-                <span class="metric-source">Computed</span>
-            </div>
-            <p>Gold price × ~6.835 billion troy ounces of above-ground gold. The supply estimate comes from the World Gold Council (~212,582 tonnes × 32,150.7 troy oz/tonne) and updates slowly enough that a fixed constant works fine. As of 2025, this number is in the $18–22 trillion range.</p>
-            <div class="why"><strong>Why it matters:</strong> gold is the historical "monetary asset" benchmark. Its market cap is the standard measuring stick for any new contender — including Bitcoin.</div>
-        </div>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span class="metric-name">BTC % of Gold</span>
-                <span class="metric-source">Computed</span>
-            </div>
-            <p>Bitcoin's market cap divided by gold's market cap, expressed as a percentage. Sometimes called "gold dominance" in BTC circles.</p>
-            <div class="why"><strong>Why it matters:</strong> a single number that captures the "digital vs. physical store of value" race. Watching this trend over months tells you whether BTC is gaining or losing ground against the asset it's most often compared to.</div>
-        </div>
-
-        <div class="metric">
-            <div class="metric-head">
-                <span class="metric-name">BTC at Gold Parity</span>
-                <span class="metric-source">Computed</span>
-            </div>
-            <p>The BTC price required for Bitcoin's market cap to match gold's, holding both supplies constant. Calculated as `gold market cap ÷ circulating BTC supply`. The "% from current" subtitle shows the percentage move BTC would need to make from today's price to get there.</p>
-            <div class="why"><strong>Why it matters:</strong> the Bitcoin-as-digital-gold thesis, expressed as a single price target. Whether you find the thesis compelling or not, this is the number that thesis implies.</div>
         </div>
 
         <h2>Network</h2>
