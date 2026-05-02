@@ -262,6 +262,44 @@
             <div class="why"><strong>Why it matters:</strong> ATH is a more stable reference than spot price. If this multiple is still meaningfully above 1×, the macro "gap" persists even at past peaks.</div>
         </div>
 
+        <h2>Bitcoin vs. Gold</h2>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Gold Price</span>
+                <span class="metric-source">CoinGecko · pax-gold</span>
+            </div>
+            <p>Spot price of gold per troy ounce, sourced via PAX Gold (PAXG) — a 1:1 physically-backed gold token that tracks spot gold within a few basis points. Standard keyless way to pull a gold price client-side without an API key. The 24-hour change shows how the metal has moved since this time yesterday.</p>
+            <div class="why"><strong>Why it matters:</strong> the anchor of the section. Every other comparison flows from this number.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">Gold Market Cap</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>Gold price × ~6.835 billion troy ounces of above-ground gold. The supply estimate comes from the World Gold Council (~212,582 tonnes × 32,150.7 troy oz/tonne) and updates slowly enough that a fixed constant works fine. As of 2025, this number is in the $18–22 trillion range.</p>
+            <div class="why"><strong>Why it matters:</strong> gold is the historical "monetary asset" benchmark. Its market cap is the standard measuring stick for any new contender — including Bitcoin.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">BTC % of Gold</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>Bitcoin's market cap divided by gold's market cap, expressed as a percentage. Sometimes called "gold dominance" in BTC circles.</p>
+            <div class="why"><strong>Why it matters:</strong> a single number that captures the "digital vs. physical store of value" race. Watching this trend over months tells you whether BTC is gaining or losing ground against the asset it's most often compared to.</div>
+        </div>
+
+        <div class="metric">
+            <div class="metric-head">
+                <span class="metric-name">BTC at Gold Parity</span>
+                <span class="metric-source">Computed</span>
+            </div>
+            <p>The BTC price required for Bitcoin's market cap to match gold's, holding both supplies constant. Calculated as `gold market cap ÷ circulating BTC supply`. The "% from current" subtitle shows the percentage move BTC would need to make from today's price to get there.</p>
+            <div class="why"><strong>Why it matters:</strong> the Bitcoin-as-digital-gold thesis, expressed as a single price target. Whether you find the thesis compelling or not, this is the number that thesis implies.</div>
+        </div>
+
         <h2>Network</h2>
 
         <div class="metric">
@@ -400,7 +438,7 @@
         <details>
             <summary>Where does this data come from?</summary>
             <ul>
-                <li><a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a> — price, market cap, volume, ATH, supply, 90-day price chart</li>
+                <li><a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a> — price, market cap, volume, ATH, supply, 90-day price chart, gold price (via PAX Gold proxy)</li>
                 <li><a href="https://mempool.space/" target="_blank" rel="noopener">mempool.space</a> — block height, mempool, fees, hash rate, difficulty</li>
                 <li><a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a> — Fear &amp; Greed Index</li>
                 <li><a href="https://fiscaldata.treasury.gov/" target="_blank" rel="noopener">TreasuryDirect</a> — official US national debt (Debt to the Penny feed)</li>

@@ -306,6 +306,30 @@
             </div>
         </div>
 
+        <h2>Bitcoin vs. Gold</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="lbl">Gold Price</div>
+                <div id="goldPrice" class="val">&mdash;</div>
+                <div id="goldChange" class="sub">per troy oz</div>
+            </div>
+            <div class="card">
+                <div class="lbl">Gold Market Cap</div>
+                <div id="goldMcap" class="val">&mdash;</div>
+                <div class="sub">~6.835B oz above ground</div>
+            </div>
+            <div class="card">
+                <div class="lbl">BTC % of Gold</div>
+                <div id="btcGoldPct" class="val">&mdash;</div>
+                <div class="sub">market-cap dominance</div>
+            </div>
+            <div class="card">
+                <div class="lbl">BTC at Gold Parity</div>
+                <div id="btcGoldParity" class="val">&mdash;</div>
+                <div id="btcGoldParityDelta" class="sub">required price</div>
+            </div>
+        </div>
+
         <h2>Network</h2>
         <div class="grid">
             <div class="card">
@@ -399,6 +423,11 @@
 <script>
 const TARGET_SUPPLY = 21_000_000;
 
+// Above-ground gold supply: ~212,582 tonnes × 32,150.7 troy oz/tonne.
+// Source: World Gold Council. Updated annually but moves slowly enough
+// that a fixed constant is fine for dashboard purposes.
+const TOTAL_GOLD_OZ = 6_835_000_000;
+
 const statusEl  = document.getElementById('status');
 const statusMsg = document.getElementById('statusMsg');
 const refreshBtn = document.getElementById('refreshBtn');
@@ -457,9 +486,10 @@ async function loadMarket() {
     setText('supplyPct', `${(m.circulating_supply / TARGET_SUPPLY * 100).toFixed(2)}% of 21M cap`);
 
     marketSnapshot = {
-        price:  m.current_price.usd,
-        ath:    m.ath.usd,
-        supply: m.circulating_supply,
+        price:     m.current_price.usd,
+        ath:       m.ath.usd,
+        supply:    m.circulating_supply,
+        marketCap: m.market_cap.usd,
     };
 }
 
@@ -492,6 +522,43 @@ async function loadMacroDebt() {
     setText('debtPerBtc',     '$' + fmtCompact(pricePerBTC));
     setText('debtMultCurrent', `${multCurrent.toFixed(1)}× current`);
     setText('debtMultAth',     `${multATH.toFixed(1)}× ATH`);
+}
+
+// Bitcoin vs. Gold market-cap comparison.
+// Source: CoinGecko `pax-gold` (PAXG) — a 1:1 physically-backed gold
+// token that tracks spot gold within a few basis points. Standard
+// keyless way to pull a gold price client-side.
+async function loadMacroGold() {
+    if (!marketSnapshot) throw new Error('market data not yet loaded');
+
+    const data = await fetchJSON(
+        'https://api.coingecko.com/api/v3/simple/price' +
+        '?ids=pax-gold&vs_currencies=usd&include_24hr_change=true'
+    );
+    const goldPrice  = data?.['pax-gold']?.usd;
+    const goldChange = data?.['pax-gold']?.usd_24h_change;
+    if (!Number.isFinite(goldPrice) || goldPrice <= 0) {
+        throw new Error('CoinGecko: bad gold price');
+    }
+
+    const goldMcap   = goldPrice * TOTAL_GOLD_OZ;
+    const dominance  = (marketSnapshot.marketCap / goldMcap) * 100;
+    const parity     = goldMcap / marketSnapshot.supply;
+    const parityPct  = ((parity - marketSnapshot.price) / marketSnapshot.price) * 100;
+
+    setText('goldPrice', fmtUSD(goldPrice, 0));
+    if (Number.isFinite(goldChange)) {
+        setText('goldChange', `${fmtPct(goldChange)} 24h · per troy oz`,
+                goldChange >= 0 ? 'up' : 'down');
+    } else {
+        setText('goldChange', 'per troy oz');
+    }
+    setText('goldMcap',   '$' + fmtCompact(goldMcap));
+    setText('btcGoldPct', `${dominance.toFixed(2)}%`);
+    setText('btcGoldParity', '$' + fmtCompact(parity));
+    setText('btcGoldParityDelta',
+            `${parityPct >= 0 ? '+' : ''}${parityPct.toFixed(0)}% from current`,
+            parityPct >= 0 ? 'up' : 'down');
 }
 
 async function loadPriceHistory() {
@@ -666,7 +733,7 @@ async function refresh() {
     refreshBtn.disabled = true;
     setStatus('', 'Fetching live data…');
     const results = await Promise.allSettled([
-        loadMarket().then(loadMacroDebt),
+        loadMarket().then(() => Promise.all([loadMacroDebt(), loadMacroGold()])),
         loadPriceHistory(),
         loadNetwork().then(loadFeeHistogram),
         loadFearGreed(),
